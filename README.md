@@ -45,15 +45,14 @@ Here’s a brief overview of the project files and directories:
 3. **Install dependencies**:
 ```
 pip install -r requirements.txt
+
 Set up the database: Update the database settings in AgroConnect/settings.py and then run:
-
 python manage.py migrate
+
 Create a superuser:
-
 python manage.py createsuperuser
+
 Run the development server:
-
-
 python manage.py runserver
 
 Access the application: Open your browser and navigate to http://127.0.0.1:8000/.
