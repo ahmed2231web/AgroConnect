@@ -1,0 +1,2 @@
+EMAIL = attaahmed5656@gmail.com
+PASSWORD = ADMIN
