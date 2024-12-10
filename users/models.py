@@ -5,7 +5,7 @@ from django.core.validators import RegexValidator
 # Create your models here.
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, phoneNumber, email, fullName, cnic, user_type, password=None, **extra_fields):
+    def create_user(self, phoneNumber, email, fullName, user_type, province=None, city=None, password=None, **extra_fields):
         '''
         Creates and saves a new user
         '''
@@ -17,8 +17,9 @@ class CustomUserManager(BaseUserManager):
             phoneNumber=phoneNumber,
             email=self.normalize_email(email),
             fullName=fullName,
-            cnic=cnic,
             user_type=user_type,
+            province=province,
+            city=city,
             **extra_fields
         )
 
@@ -26,20 +27,25 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, phoneNumber, email, fullName, cnic, user_type=None, password=None):
+    def create_superuser(self, phoneNumber, email, fullName, user_type=None, province=None, city=None, password=None):
         '''
         Creates and saves a superuser with administrative privileges.
         Superusers are always created with ADMIN user_type.
         '''
         if user_type and user_type != self.model.UserType.ADMIN:
             raise ValueError('Superuser must have user_type=ADMIN')
+        if not province:
+            raise ValueError('Province field is required')
+        if not city:
+            raise ValueError('City field is required')
             
         user = self.create_user(
             phoneNumber=phoneNumber,
             email=email,
             fullName=fullName,
-            cnic=cnic,
             user_type=self.model.UserType.ADMIN,
+            province=province,
+            city=city,
             password=password
         )
         user.is_staff = True
@@ -74,12 +80,27 @@ class CustomUser(AbstractBaseUser):
         unique=True
     )
 
-    cnic = models.CharField(max_length=15, unique=True)
-
     user_type = models.CharField(
         max_length=20,
         choices=UserType.choices,
         help_text='ADMIN type is reserved for superusers only'
+    )
+
+    province = models.CharField(
+        max_length=20,
+        error_messages={
+            'blank': 'Province field is required',
+            'null': 'Province field is required'
+        }
+    )
+    
+    city = models.CharField(
+        max_length=30,
+        # default='Unknown',  # Temporary default for migration
+        error_messages={
+            'blank': 'City field is required',
+            'null': 'City field is required'
+        }
     )
 
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -92,7 +113,7 @@ class CustomUser(AbstractBaseUser):
 
     USERNAME_FIELD = 'phoneNumber'
 
-    REQUIRED_FIELDS = ['fullName', 'email', 'cnic', 'user_type']
+    REQUIRED_FIELDS = ['fullName', 'email', 'user_type', 'province', 'city']
 
     class Meta:
         verbose_name = 'User'
